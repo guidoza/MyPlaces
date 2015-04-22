@@ -6,4 +6,6 @@
     <string name="title_activity_nuevo_sitio">NuevoSitio</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_mis_sitios">MisSitios</string>
+    <string name="title_activity_credits">Credits</string>
 </resources>

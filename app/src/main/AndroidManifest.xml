@@ -21,6 +21,14 @@
             android:name=".NuevoSitio"
             android:label="@string/title_activity_nuevo_sitio" >
         </activity>
+        <activity
+            android:name=".MisSitios"
+            android:label="@string/title_activity_mis_sitios" >
+        </activity>
+        <activity
+            android:name=".Credits"
+            android:label="@string/title_activity_credits" >
+        </activity>
     </application>
 
 </manifest>
