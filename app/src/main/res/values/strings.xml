@@ -3,9 +3,12 @@
 
     <string name="title">MyPlaces!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_compartir">Compartir</string>
+    <string name="action_guardar">Guardar</string>
     <string name="title_activity_nuevo_sitio">NuevoSitio</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_mis_sitios">MisSitios</string>
     <string name="title_activity_credits">Credits</string>
+    <string name="title_activity_buscar_sitio">Map</string>
 </resources>
