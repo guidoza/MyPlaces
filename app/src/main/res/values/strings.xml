@@ -11,4 +11,10 @@
     <string name="title_activity_mis_sitios">MisSitios</string>
     <string name="title_activity_credits">Credits</string>
     <string name="title_activity_buscar_sitio">Map</string>
+
+    <string name="nombreSitio">Inserta el nombre del sitio</string>
+    <string name="descripcionSitio">Inserta la descripción del sitio</string>
+    <string name="categoria">Elige una categoría</string>
+    <string name="foto">Haz una foto!</string>
+
 </resources>
