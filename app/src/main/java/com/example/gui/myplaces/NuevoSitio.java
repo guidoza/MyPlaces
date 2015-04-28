@@ -1,11 +1,13 @@
 package com.example.gui.myplaces;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -19,6 +21,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -30,6 +41,7 @@ public class NuevoSitio extends ActionBarActivity {
 
     ImageView imagenSeleccionada;
     Button btnSelectImage;
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,6 +173,58 @@ public class NuevoSitio extends ActionBarActivity {
                 c.close();
                 Bitmap thumbnail = (BitmapFactory.decodeFile(picturePath));
                 imagenSeleccionada.setImageBitmap(thumbnail);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Check the availability of the Google Play Services
+
+        int available = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (available != ConnectionResult.SUCCESS) {
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(available, this, 0);
+            if (dialog != null) {
+                MyErrorDialog errorDialog = new MyErrorDialog();
+                errorDialog.setDialog(dialog);
+                errorDialog.show(getSupportFragmentManager(), "errorDialog");
+            }
+        }
+
+        // Instantiate the MapFragment
+
+        setUpMapIfNeeded();
+    }
+    private void setUpMapIfNeeded() {
+        // Configuramos el objeto GoogleMaps con valores iniciales.
+        if (mMap == null) {
+            //Instanciamos el objeto mMap a partir del MapFragment definido bajo el Id "map"
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .getMap();
+            // Chequeamos si se ha obtenido correctamente una referencia al objeto GoogleMap
+            if (mMap != null) {
+                // El objeto GoogleMap ha sido referenciado correctamente
+                // Asigno un nivel de zoom
+                mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                mMap.setMyLocationEnabled(true);
+                // Establezco un listener para ver cuando cambio de posicion
+                mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+
+                    public void onMyLocationChange(Location pos) {
+                        // Extraigo la Lat y Lon del Listener
+                        double lat = pos.getLatitude();
+                        double lon = pos.getLongitude();
+
+                        // Muevo la camara a mi posicion
+                        CameraUpdate cam = CameraUpdateFactory.newLatLng(new LatLng(
+                                lat, lon));
+                        CameraUpdate ZoomCam = CameraUpdateFactory.zoomTo(17);
+                        mMap.animateCamera(ZoomCam);
+                        mMap.animateCamera(cam);
+                    }
+                });
             }
         }
     }
