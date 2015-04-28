@@ -17,6 +17,11 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -41,19 +46,19 @@
         </activity>
         <activity
             android:name=".NuevoSitio"
-            android:label="@string/title_activity_nuevo_sitio" >
+            android:label="@string/title_activity_nuevo_sitio"
+            android:parentActivityName=".MainActivity">
         </activity>
         <activity
             android:name=".MisSitios"
-            android:label="@string/title_activity_mis_sitios" >
+            android:label="@string/title_activity_mis_sitios"
+            android:parentActivityName=".MainActivity">
         </activity>
         <activity
             android:name=".Credits"
-            android:label="@string/title_activity_credits" >
+            android:label="@string/title_activity_credits"
+            android:parentActivityName=".MainActivity">
         </activity>
-
-
-
         <activity
             android:name=".BuscarSitio"
             android:label="@string/title_activity_buscar_sitio" >
