@@ -91,7 +91,7 @@ public class NuevoSitio extends ActionBarActivity {
 
     private void selectImage() {
 
-        final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
+        final CharSequence[] options = { "Haz una foto", "Elige de la galería","Atrás" };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(NuevoSitio.this);
         builder.setTitle("Add Photo!");
