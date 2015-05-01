@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -15,10 +16,12 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -41,7 +44,13 @@ public class NuevoSitio extends ActionBarActivity {
 
     ImageView imagenSeleccionada;
     Button btnSelectImage;
+    EditText nombreSitio;
+    EditText descripcionSitio;
     private GoogleMap mMap;
+    private Location posicion;
+    private String name;
+    private String description;
+    private String image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +68,8 @@ public class NuevoSitio extends ActionBarActivity {
                 selectImage();
             }
         });
+        nombreSitio = (EditText) findViewById(R.id.nombreSitio);
+        descripcionSitio = (EditText) findViewById(R.id.descripcionSitio);
 
     }
 
@@ -77,8 +88,13 @@ public class NuevoSitio extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_guardar) {
+            name = nombreSitio.getText().toString();
+            description = descripcionSitio.getText().toString();
+            MySQLOpenHelper helper = new MySQLOpenHelper(this);
+            SQLiteDatabase db = helper.getWritableDatabase();
+            db.execSQL("INSERT INTO myplaces (latitud, longitud, name, description, image) VALUES ('"+1+"', '"+1+"', '"+name+"', '"+description+"', '"+image+"');");
+            db.close();
             return true;
         }
         if (id == R.id.home) {
@@ -91,7 +107,7 @@ public class NuevoSitio extends ActionBarActivity {
 
     private void selectImage() {
 
-        final CharSequence[] options = { "Haz una foto", "Elige de la galería","Atrás" };
+        final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(NuevoSitio.this);
         builder.setTitle("Add Photo!");
@@ -137,7 +153,6 @@ public class NuevoSitio extends ActionBarActivity {
 
                     bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
                             bitmapOptions);
-
                     imagenSeleccionada.setImageBitmap(bitmap);
 
                     String path = android.os.Environment
@@ -152,6 +167,7 @@ public class NuevoSitio extends ActionBarActivity {
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
                         outFile.flush();
                         outFile.close();
+                        image = path;
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
@@ -163,13 +179,14 @@ public class NuevoSitio extends ActionBarActivity {
                     e.printStackTrace();
                 }
             } else if (requestCode == 2) {
-
+                Log.d("DDDDDDD","elige de la galeria");
                 Uri selectedImage = data.getData();
                 String[] filePath = { MediaStore.Images.Media.DATA };
                 Cursor c = getContentResolver().query(selectedImage,filePath, null, null, null);
                 c.moveToFirst();
                 int columnIndex = c.getColumnIndex(filePath[0]);
                 String picturePath = c.getString(columnIndex);
+                image = picturePath;
                 c.close();
                 Bitmap thumbnail = (BitmapFactory.decodeFile(picturePath));
                 imagenSeleccionada.setImageBitmap(thumbnail);
@@ -209,6 +226,8 @@ public class NuevoSitio extends ActionBarActivity {
                 // Asigno un nivel de zoom
                 mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 mMap.setMyLocationEnabled(true);
+                CameraUpdate ZoomCam = CameraUpdateFactory.zoomTo(17);
+                mMap.animateCamera(ZoomCam);
                 // Establezco un listener para ver cuando cambio de posicion
                 mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
 
@@ -220,9 +239,10 @@ public class NuevoSitio extends ActionBarActivity {
                         // Muevo la camara a mi posicion
                         CameraUpdate cam = CameraUpdateFactory.newLatLng(new LatLng(
                                 lat, lon));
-                        CameraUpdate ZoomCam = CameraUpdateFactory.zoomTo(17);
-                        mMap.animateCamera(ZoomCam);
+
                         mMap.animateCamera(cam);
+                        posicion = pos;
+
                     }
                 });
             }
