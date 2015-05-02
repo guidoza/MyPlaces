@@ -1,14 +1,18 @@
 package com.example.gui.myplaces;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -16,6 +20,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,6 +56,8 @@ public class NuevoSitio extends ActionBarActivity {
     private String name;
     private String description;
     private String image;
+    private AlertDialog alert = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,20 +161,22 @@ public class NuevoSitio extends ActionBarActivity {
                     bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
                             bitmapOptions);
                     imagenSeleccionada.setImageBitmap(bitmap);
-
-                    String path = android.os.Environment
-                            .getExternalStorageDirectory()
-                            + File.separator
-                            + "Phoenix" + File.separator + "default";
                     f.delete();
-                    OutputStream outFile = null;
-                    File file = new File(path, String.valueOf(System.currentTimeMillis()) + ".jpg");
+
+                    File imagesFolder = new File(
+                            Environment.getExternalStorageDirectory(), "Myplaces");
+                    imagesFolder.mkdirs();
+                    OutputStream outFile;
+                    String name = String.valueOf(System.currentTimeMillis());
+                    File file = new File(imagesFolder, name+ ".jpg");
+                    image = file.getAbsolutePath();
+
                     try {
                         outFile = new FileOutputStream(file);
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
                         outFile.flush();
                         outFile.close();
-                        image = path;
+
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
@@ -209,10 +218,20 @@ public class NuevoSitio extends ActionBarActivity {
                 errorDialog.show(getSupportFragmentManager(), "errorDialog");
             }
         }
-
+        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+            ActivaGPS();
+        }
         // Instantiate the MapFragment
-
         setUpMapIfNeeded();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(alert != null){
+            alert.dismiss ();
+        }
     }
     private void setUpMapIfNeeded() {
         // Configuramos el objeto GoogleMaps con valores iniciales.
@@ -248,4 +267,24 @@ public class NuevoSitio extends ActionBarActivity {
             }
         }
     }
+
+    private void ActivaGPS() {
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("El sistema GPS esta desactivado, ¿Desea activarlo?")
+                .setCancelable(false)
+                .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        alert = builder.create();
+        alert.show();
+    }
+
 }

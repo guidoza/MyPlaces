@@ -17,5 +17,9 @@
     <string name="descripcionSitio">Inserta la descripción del sitio</string>
     <string name="categoria">Elige una categoría</string>
     <string name="foto">Selecciona una foto</string>
+    <string name="title_activity_sitio">Sitio</string>
+
+    <string name="ir">Abrir en Google Maps</string>
+
 
 </resources>

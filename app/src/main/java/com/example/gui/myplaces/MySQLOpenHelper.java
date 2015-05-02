@@ -3,12 +3,14 @@ package com.example.gui.myplaces;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.AdapterView;
 
 public class MySQLOpenHelper extends SQLiteOpenHelper {
 
-	public MySQLOpenHelper(Context context) {
-		super(context, "myplaces.db", null, 1);
-	}
+    public MySQLOpenHelper(Context context) {
+        super(context, "myplaces.db", null, 1);
+    }
+
 
 	@Override
 	public void onCreate(SQLiteDatabase arg0) {
