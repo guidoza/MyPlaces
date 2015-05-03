@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -20,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -34,11 +36,24 @@ public class MisSitios extends ActionBarActivity {
 
     private Bitmap foto;
     String[] data;
+    private String[] opcionesMenu;
+    private DrawerLayout drawerLayout;
+    private ListView drawerList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mis_sitios);
+
+
+        opcionesMenu = new String[]{"Opción1","Opción2","Opción3"};
+        drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        drawerList = (ListView) findViewById(R.id.left_drawer);
+        drawerList.setAdapter(new ArrayAdapter<String>(
+                getSupportActionBar().getThemedContext(),
+                android.R.layout.simple_list_item_activated_1, opcionesMenu));
+
+
         ListView listPlaces = (ListView) findViewById(R.id.placesList);
         listPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -112,12 +127,12 @@ public class MisSitios extends ActionBarActivity {
         //new String[]{"nombre", "imagen"}, new int[]{
           //      R.id.list_scores_title, R.id.list_scores_title1});
 
-        adapter.setViewBinder(new SimpleAdapter.ViewBinder(){
+        adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
 
             @Override
             public boolean setViewValue(View view, Object data,
                                         String textRepresentation) {
-                if( (view instanceof ImageView) & (data instanceof Bitmap) ) {
+                if ((view instanceof ImageView) & (data instanceof Bitmap)) {
                     ImageView iv = (ImageView) view;
                     Bitmap bm = (Bitmap) data;
                     iv.setImageBitmap(bm);

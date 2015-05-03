@@ -8,25 +8,35 @@
 
     <TextView android:text="@string/title"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="15dp" />
 
     <ImageButton
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:id="@+id/buttonNuevoSitio"
-        android:onClick="onClickDashboard" />
+        android:onClick="onClickDashboard"
+        android:background="@drawable/circle2"
+        android:layout_gravity="center"
+        android:layout_margin="15dp" />
 
     <ImageButton
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:id="@+id/buttonMisSitios"
-        android:onClick="onClickDashboard" />
+        android:onClick="onClickDashboard"
+        android:background="@drawable/circle2"
+        android:layout_gravity="center"
+        android:layout_margin="15dp" />
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/buttonCredits"
         android:background="@android:drawable/ic_dialog_info"
-        android:onClick="onClickDashboard" />
+        android:onClick="onClickDashboard"
+        android:layout_gravity="center"
+        android:layout_margin="15dp" />
 
 </LinearLayout>

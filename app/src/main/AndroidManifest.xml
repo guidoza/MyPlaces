@@ -54,7 +54,7 @@
         <activity
             android:name=".MisSitios"
             android:label="@string/title_activity_mis_sitios"
-            android:parentActivityName=".MainActivity" >
+             >
         </activity>
         <activity
             android:name=".Credits"
