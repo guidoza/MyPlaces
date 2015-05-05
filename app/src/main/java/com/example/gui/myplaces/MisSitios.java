@@ -3,8 +3,10 @@ package com.example.gui.myplaces;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 
 public class MisSitios extends ActionBarActivity {
@@ -48,54 +51,97 @@ public class MisSitios extends ActionBarActivity {
     private ListView drawerList;
     ActionBarDrawerToggle drawerToggle;
     private ArrayList<Categoria> listaCategorias;
+    ListView listPlaces;
+    ArrayList<HashMap<String, Object>> dataPlaces;
+    ArrayList<HashMap<String, Object>> dataPlacesAux;
+    SimpleAdapter adapter;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mis_sitios);
+        listPlaces = (ListView) findViewById(R.id.placesList);
 
-        for(int i=0; i<=listaCategorias.size(); i++){
-            opcionesMenu[i]= listaCategorias.get(i).getNombreCategoria();
-        }
+
+
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
-        drawerList.setAdapter(new ArrayAdapter<String>(
-                getSupportActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_activated_1, opcionesMenu));
+        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView parent,
+                                    View view, int position, long id){
+                String cat = parent.getItemAtPosition(position).toString();
+                dataPlaces.clear();
+                for(int i=0; i<dataPlacesAux.size(); i++){
+                HashMap<String, Object> aux = new HashMap<>();
+                aux.put("nombre", dataPlacesAux.get(i).get("nombre"));
+                aux.put("imagen", dataPlacesAux.get(i).get("imagen"));
+                dataPlaces.add(aux);
+                }
+                if(cat.equals("Todos")){
+                    listPlaces.setAdapter(adapter);
+                } else {
+                    MySQLOpenHelper helper = new MySQLOpenHelper(getApplicationContext());
+                    SQLiteDatabase db = helper.getReadableDatabase();
+                    Iterator<HashMap<String, Object>> iter = dataPlaces.iterator();
+                    while(iter.hasNext()){
+                        String nombre = iter.next().get("nombre").toString();
+                        Cursor cursor = db.rawQuery("SELECT categoria FROM myplaces WHERE name='"+nombre+"'", null);
+                        while (cursor.moveToNext()) {
+                            if(!cursor.getString(0).equals(cat)){
+                                iter.remove();
+                            }
+                        }
+                        cursor.close();
+                    }
+                    db.close();
+                    listPlaces.setAdapter(adapter);
+                }
+                drawerList.setItemChecked(position, true);
+                drawerLayout.closeDrawer(drawerList);
+            }
+        });
+
 
         final CharSequence tituloApp = getTitle();
-        drawerToggle=new ActionBarDrawerToggle(this, drawerLayout,R.drawable.ic_places,
-                "Categorías",tituloApp){
-                            public void onDrawerClosed(View view){
-                                getSupportActionBar().setTitle(tituloSeccion);
-                                ActivityCompat.invalidateOptionsMenu(MisSitios.this);
-                            }
-                            public void onDrawerOpened(View drawerView){
-                                getSupportActionBar().setTitle(tituloApp);
-                                ActivityCompat.invalidateOptionsMenu(MisSitios.this);
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
+                R.string.categoria,
+                R.string.title_activity_mis_sitios){
+            public void onDrawerClosed(View view){
+                getSupportActionBar().setTitle(tituloApp);
+                ActivityCompat.invalidateOptionsMenu(MisSitios.this);
+            }
+            public void onDrawerOpened(View drawerView){
+                getSupportActionBar().setTitle("Selecciona una categoría");
+                ActivityCompat.invalidateOptionsMenu(MisSitios.this);
 
-                            }
-                        };
+            }
+        };
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         drawerLayout.setDrawerListener(drawerToggle);
 
 
-        ListView listPlaces = (ListView) findViewById(R.id.placesList);
+
         listPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                data = new String[5];
+                data = new String[6];
                 String selected = ((TextView) view.findViewById(R.id.list_scores_title)).getText().toString();
                 Log.d("FFFFFF",selected);
                 MySQLOpenHelper helper = new MySQLOpenHelper(getApplicationContext());
                 SQLiteDatabase db = helper.getReadableDatabase();
-                Cursor cursor = db.rawQuery("SELECT latitud, longitud, name, description, image FROM myplaces WHERE name='"+selected+"'", null);
+                Cursor cursor = db.rawQuery("SELECT latitud, longitud, name, description, image, categoria FROM myplaces WHERE name='"+selected+"'", null);
                 while (cursor.moveToNext()) {
                 data[0] = String.valueOf(cursor.getDouble(0));
                 data[1] = String.valueOf(cursor.getDouble(1));
                 data[2]= cursor.getString(2);
                 data[3] = cursor.getString(3);
                 data[4]= cursor.getString(4);
+                data[5]= cursor.getString(5);
                 }
                 cursor.close();
                 db.close();
@@ -109,7 +155,7 @@ public class MisSitios extends ActionBarActivity {
         //Itmems
         HashMap<String, Object> itemLocal;
         //Lista de items
-        ArrayList<HashMap<String, Object>> dataPlaces = new ArrayList<>();
+        dataPlaces = new ArrayList<>();
 
         MySQLOpenHelper helper = new MySQLOpenHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
@@ -118,24 +164,18 @@ public class MisSitios extends ActionBarActivity {
             itemLocal = new HashMap<>();
             String nombre = cursor.getString(0);
             String imagenPath = cursor.getString(1);
-            Log.d("DDDDD",imagenPath);
 
             if(!imagenPath.equals("null")) {
-                Log.d("DDDDD", "Dentro del if");
                 File image = new File(imagenPath);
                 if(image.exists()){
-                    Log.d("DDDDD", "dentro del exists" + image.getAbsolutePath());
                     Bitmap bitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
                     foto = Bitmap.createScaledBitmap(bitmap, ((int) convertDpToPixel(140, this)), ((int) convertDpToPixel(110, this)), true);
-                    Log.d("DDDDD","dentro del exists");
 
                 }
 
-                Log.d("DDDDD","puesta la imagen: "+imagenPath);
 
             } else {
                 foto = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_places);
-                Log.d("DDDDD","decode null: ");
             }
 
             itemLocal.put("nombre", nombre);
@@ -146,8 +186,17 @@ public class MisSitios extends ActionBarActivity {
         cursor.close();
         db.close();
 
+        dataPlacesAux = new ArrayList<>();
+        for(int i=0; i<dataPlaces.size(); i++){
+            HashMap<String, Object> aux = new HashMap<>();
+            aux.put("nombre", dataPlaces.get(i).get("nombre"));
+            aux.put("imagen", dataPlaces.get(i).get("imagen"));
+            dataPlacesAux.add(aux);
+        }
+
+
         //Adaptador que establece el layout para cada itemFriend
-        SimpleAdapter adapter = new SimpleAdapter(this, dataPlaces, R.layout.list_places_layout,
+        adapter = new SimpleAdapter(this, dataPlaces, R.layout.list_places_layout,
                 new String[]{"nombre", "imagen"},
                 new int[]{ R.id.list_scores_title, R.id.list_scores_icon});
         //new String[]{"nombre", "imagen"}, new int[]{
@@ -172,7 +221,54 @@ public class MisSitios extends ActionBarActivity {
 
         listPlaces.setAdapter(adapter);
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("RRRRRRRRR", "En onResume()");
+        listaCategorias = new ArrayList<>();
+        listaCategorias.add(0,new Categoria("Todos"));
+        MySQLOpenHelper helper = new MySQLOpenHelper(this);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT name FROM categories", null);
+        while (cursor.moveToNext()) {
+            Log.d("RRRRRRRRR",cursor.getString(0));
+            Categoria nuevaCategoria = new Categoria(cursor.getString(0));
+            listaCategorias.add(nuevaCategoria);
+            Log.d("RRRRRRRRR","Lista categorias: "+nuevaCategoria.getNombreCategoria()+" ");
+        }
+        cursor.close();
+        db.close();
 
+
+        opcionesMenu = new String[listaCategorias.size()];
+        Log.d("RRRRRR",String.valueOf(listaCategorias.size()));
+        for(int i=1; i<=listaCategorias.size(); i++){
+            opcionesMenu[i-1]= listaCategorias.get(i-1).getNombreCategoria();
+        }
+        drawerList.setAdapter(new ArrayAdapter<String>(
+                getSupportActionBar().getThemedContext(),
+                android.R.layout.simple_list_item_activated_1, opcionesMenu));
+
+
+    }
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState){
+        super.onPostCreate(savedInstanceState);
+        drawerToggle.syncState();
+    }
+    @Override
+    public void onConfigurationChanged(Configuration newConfig){
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu){
+        boolean menuAbierto = drawerLayout.isDrawerOpen(drawerList);
+        if(menuAbierto) menu.findItem(R.id.action_addCategory).setVisible(false);
+        else menu.findItem(R.id.action_addCategory).setVisible(true);
+
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -192,19 +288,27 @@ public class MisSitios extends ActionBarActivity {
         if (id == R.id.action_settings) {
             return true;
         }
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         if (id == R.id.action_addCategory) {
             LayoutInflater factory = LayoutInflater.from(this);
             final View layout = factory.inflate(R.layout.add_category, null);
+            final EditText editText = (EditText) layout.findViewById(R.id.editText_categoria);
             AlertDialog.Builder builder = new AlertDialog.Builder(MisSitios.this);
                     builder.setTitle("Indica el nombre de la categoría:")
                     .setView(layout)
                     .setPositiveButton("Crear", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            EditText editText = (EditText) findViewById(R.id.editText_categoria);
+
                             String nombreCategoria = editText.getText().toString();
-                            Categoria nuevaCategoria = new Categoria(nombreCategoria);
-                            listaCategorias.add(nuevaCategoria);
-                            dialog.dismiss();
+                            Log.d("RRRRR", nombreCategoria);
+                            MySQLOpenHelper helper = new MySQLOpenHelper(getApplicationContext());
+                            SQLiteDatabase db = helper.getWritableDatabase();
+                            db.execSQL("INSERT INTO categories (name) VALUES ('"+nombreCategoria+"');");
+                            db.close();
+                            onResume();
                         }
                     })
                     .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
@@ -227,3 +331,4 @@ public class MisSitios extends ActionBarActivity {
         return px;
     }
 }
+

@@ -23,12 +23,16 @@ public class Sitio extends ActionBarActivity {
         ImageView imagen =(ImageView) findViewById(R.id.imageView);
         TextView tvName =(TextView) findViewById(R.id.textView);
         TextView tvDescription =(TextView) findViewById(R.id.textView3);
+        TextView tvCategoria = (TextView) findViewById(R.id.textView5);
 
         String[] datos;
         datos = getIntent().getStringArrayExtra("data");
 
         tvName.setText(datos[2]);
         tvDescription.setText(datos[3]);
+        if(datos[5].equals("Ninguna")){
+            tvCategoria.setText("");
+        }else tvCategoria.setText(datos[5]);
 
         if(!datos[4].equals("null")) {
             File image = new File(datos[4]);

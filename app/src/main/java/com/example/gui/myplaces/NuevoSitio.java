@@ -25,9 +25,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -43,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 
 public class NuevoSitio extends ActionBarActivity {
@@ -51,11 +55,14 @@ public class NuevoSitio extends ActionBarActivity {
     Button btnSelectImage;
     EditText nombreSitio;
     EditText descripcionSitio;
+    Spinner spiner;
+    private ArrayList<String> categorias;
     private GoogleMap mMap;
     private Location posicion;
     private String name;
     private String description;
     private String image;
+    private String categoria;
     private AlertDialog alert = null;
 
 
@@ -77,6 +84,27 @@ public class NuevoSitio extends ActionBarActivity {
         });
         nombreSitio = (EditText) findViewById(R.id.nombreSitio);
         descripcionSitio = (EditText) findViewById(R.id.descripcionSitio);
+        spiner = (Spinner) findViewById(R.id.spinner);
+
+        categorias = new ArrayList<>();
+        categorias.add(0, "Ninguna");
+        MySQLOpenHelper helper = new MySQLOpenHelper(this);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT name FROM categories", null);
+        while (cursor.moveToNext()) {
+            String nuevaCategoria = cursor.getString(0);
+            categorias.add(nuevaCategoria);
+        }
+        cursor.close();
+        db.close();
+
+        ArrayAdapter<String> adaptador = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item,
+                categorias);
+        adaptador.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item);
+
+        spiner.setAdapter(adaptador);
 
     }
 
@@ -98,10 +126,12 @@ public class NuevoSitio extends ActionBarActivity {
         if (id == R.id.action_guardar) {
             name = nombreSitio.getText().toString();
             description = descripcionSitio.getText().toString();
+            categoria = spiner.getSelectedItem().toString();
             MySQLOpenHelper helper = new MySQLOpenHelper(this);
             SQLiteDatabase db = helper.getWritableDatabase();
-            db.execSQL("INSERT INTO myplaces (latitud, longitud, name, description, image) VALUES ('"+1+"', '"+1+"', '"+name+"', '"+description+"', '"+image+"');");
+            db.execSQL("INSERT INTO myplaces (latitud, longitud, name, description, image, categoria) VALUES ('"+1+"', '"+1+"', '"+name+"', '"+description+"', '"+image+"', '"+categoria+"');");
             db.close();
+            finish();
             return true;
         }
         if (id == R.id.home) {
@@ -288,3 +318,5 @@ public class NuevoSitio extends ActionBarActivity {
     }
 
 }
+
+
