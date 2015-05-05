@@ -22,9 +22,6 @@ public class MainActivity extends ActionBarActivity {
         } else if(id == R.id.buttonMisSitios){
             Intent i = new Intent(this, MisSitios.class);
             startActivity(i);
-        } else if(id == R.id.buttonCredits){
-            Intent i = new Intent(this, Credits.class);
-            startActivity(i);
         }
     }
 

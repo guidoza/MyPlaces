@@ -9,7 +9,9 @@
         android:id="@+id/nombreSitio"
         android:inputType="text"
         android:hint="@string/nombreSitio"
-        android:layout_margin="10dp" />
+        android:textColorHint="@color/abc_primary_text_material_dark"
+        android:layout_margin="10dp"
+        android:textColor="@color/abc_primary_text_material_dark"/>
 
     <EditText
         android:layout_width="match_parent"
@@ -18,7 +20,9 @@
         android:ems="10"
         android:id="@+id/descripcionSitio"
         android:hint="@string/descripcionSitio"
-        android:layout_margin="10dp" />
+        android:textColorHint="@color/abc_primary_text_material_dark"
+        android:layout_margin="10dp"
+        android:textColor="@color/abc_primary_text_material_dark"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -26,13 +30,16 @@
         android:text="@string/cat"
         android:id="@+id/textView4"
         android:layout_marginLeft="10dp"
-        android:textSize="17sp" />
+        android:textSize="17sp"
+        android:textColor="@color/abc_primary_text_material_dark"/>
 
     <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/spinner"
-        android:layout_margin="10dp" />
+        android:layout_margin="10dp"
+        android:textColor="@color/abc_primary_text_material_dark"
+        />
 
     <Button
         android:layout_width="match_parent"

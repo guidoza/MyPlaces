@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -31,6 +32,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -64,6 +66,7 @@ public class NuevoSitio extends ActionBarActivity {
     private String image;
     private String categoria;
     private AlertDialog alert = null;
+    private boolean guardarEstado;
 
 
     @Override
@@ -72,7 +75,8 @@ public class NuevoSitio extends ActionBarActivity {
         setContentView(R.layout.activity_nuevo_sitio);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setIcon(R.drawable.powered_by_google_dark);
+
+        guardarEstado=true;
 
         btnSelectImage=(Button)findViewById(R.id.nuevaFoto);
         imagenSeleccionada=(ImageView)findViewById(R.id.foto);
@@ -84,17 +88,19 @@ public class NuevoSitio extends ActionBarActivity {
         });
         nombreSitio = (EditText) findViewById(R.id.nombreSitio);
         descripcionSitio = (EditText) findViewById(R.id.descripcionSitio);
+
         spiner = (Spinner) findViewById(R.id.spinner);
 
         categorias = new ArrayList<>();
-        categorias.add(0, "Ninguna");
+        categorias.add(0,"Ninguna");
         MySQLOpenHelper helper = new MySQLOpenHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
+
         Cursor cursor = db.rawQuery("SELECT name FROM categories", null);
-        while (cursor.moveToNext()) {
-            String nuevaCategoria = cursor.getString(0);
-            categorias.add(nuevaCategoria);
-        }
+            while (cursor.moveToNext()) {
+                String nuevaCategoria = cursor.getString(0);
+                categorias.add(nuevaCategoria);
+            }
         cursor.close();
         db.close();
 
@@ -124,14 +130,20 @@ public class NuevoSitio extends ActionBarActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_guardar) {
+            if(posicion==null){
+                ActivaGPS();
+            }else{
+            double latitud = posicion.getLatitude();
+            double longitud = posicion.getLongitude();
             name = nombreSitio.getText().toString();
             description = descripcionSitio.getText().toString();
             categoria = spiner.getSelectedItem().toString();
             MySQLOpenHelper helper = new MySQLOpenHelper(this);
             SQLiteDatabase db = helper.getWritableDatabase();
-            db.execSQL("INSERT INTO myplaces (latitud, longitud, name, description, image, categoria) VALUES ('"+1+"', '"+1+"', '"+name+"', '"+description+"', '"+image+"', '"+categoria+"');");
+            db.execSQL("INSERT INTO myplaces (latitud, longitud, name, description, image, categoria) VALUES ('"+latitud+"', '"+longitud+"', '"+name+"', '"+description+"', '"+image+"', '"+categoria+"');");
             db.close();
             finish();
+            }
             return true;
         }
         if (id == R.id.home) {
@@ -139,32 +151,33 @@ public class NuevoSitio extends ActionBarActivity {
             return true;
         }
 
+
         return super.onOptionsItemSelected(item);
     }
 
     private void selectImage() {
 
-        final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
+        final CharSequence[] options = { "Haz una foto", "Elige de la galeria","Cancelar" };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(NuevoSitio.this);
-        builder.setTitle("Add Photo!");
+        builder.setTitle("Añade una imagen!");
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
-                if (options[item].equals("Take Photo"))
+                if (options[item].equals("Haz una foto"))
                 {
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     File f = new File(android.os.Environment.getExternalStorageDirectory(), "temp.jpg");
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
                     startActivityForResult(intent, 1);
                 }
-                else if (options[item].equals("Choose from Gallery"))
+                else if (options[item].equals("Elige de la galeria"))
                 {
                     Intent intent = new   Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent, 2);
 
                 }
-                else if (options[item].equals("Cancel")) {
+                else if (options[item].equals("Cancelar")) {
                     dialog.dismiss();
                 }
             }
@@ -236,9 +249,9 @@ public class NuevoSitio extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        recoverState();
 
         // Check the availability of the Google Play Services
-
         int available = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (available != ConnectionResult.SUCCESS) {
             Dialog dialog = GooglePlayServicesUtil.getErrorDialog(available, this, 0);
@@ -254,6 +267,12 @@ public class NuevoSitio extends ActionBarActivity {
         }
         // Instantiate the MapFragment
         setUpMapIfNeeded();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveState();
+
     }
 
     @Override
@@ -316,6 +335,45 @@ public class NuevoSitio extends ActionBarActivity {
         alert = builder.create();
         alert.show();
     }
+    public void saveState(){
+        if(!guardarEstado) return;
+            SharedPreferences preferences = getSharedPreferences("Preferencias", Activity.MODE_PRIVATE);
+            if (preferences == null) return;
+            SharedPreferences.Editor preferencesEditor = preferences.edit();
+            if (preferencesEditor == null) return;
+            preferencesEditor.putString("namePlace", ((EditText) findViewById(R.id.nombreSitio)).getText().toString());
+            preferencesEditor.putString("descriptionPlace", ((EditText) findViewById(R.id.descripcionSitio)).getText().toString());
+            preferencesEditor.putInt("spinner", ((Spinner) findViewById(R.id.spinner)).getSelectedItemPosition());
+
+            preferencesEditor.commit();
+
+    }
+    public void recoverState(){
+        if(!guardarEstado)return;
+        SharedPreferences preferences = getSharedPreferences("Preferencias", MODE_PRIVATE);
+        if (preferences==null) return;
+        ((EditText) findViewById(R.id.nombreSitio)).setText(preferences.getString("namePlace",""));
+        ((EditText) findViewById(R.id.descripcionSitio)).setText(preferences.getString("descriptionPlace",""));
+        ((Spinner) findViewById(R.id.spinner)).setSelection(preferences.getInt("spinner", 0));
+    }
+    public void clearState(){
+        SharedPreferences preferences = getSharedPreferences("Preferencias", MODE_PRIVATE);
+        //Borramos el estado
+        preferences.edit().remove("namePlace");
+        preferences.edit().remove("descriptionPlace");
+        preferences.edit().remove("spinner");
+        preferences.edit().clear().commit();
+        guardarEstado = false;
+    }
+    @Override
+    public void finish(){
+        super.finish();
+        clearState();
+
+    }
+
+
+
 
 }
 

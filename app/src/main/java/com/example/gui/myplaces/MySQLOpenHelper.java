@@ -8,7 +8,7 @@ import android.widget.AdapterView;
 public class MySQLOpenHelper extends SQLiteOpenHelper {
 
     public MySQLOpenHelper(Context context) {
-        super(context, "myplaces.db", null, 1);
+        super(context, "SQLiteMyPlaces.db", null, 1);
     }
 
 

@@ -20,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.internal.widget.AdapterViewCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -152,6 +153,38 @@ public class MisSitios extends ActionBarActivity {
             }
         });
 
+        listPlaces.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1, final int pos, long id) {
+                final CharSequence[] options = { "Eliminar este sitio", "Cancelar" };
+                final String[] args = new String[]{dataPlaces.get(pos).get("nombre").toString()};
+                AlertDialog.Builder builder = new AlertDialog.Builder(MisSitios.this);
+                builder.setTitle("Opciones de sitio:");
+                builder.setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int item) {
+                        if (options[item].equals("Eliminar este sitio")){
+
+                            dataPlaces.remove(pos);
+                            dataPlacesAux.remove(pos);
+                            MySQLOpenHelper helper = new MySQLOpenHelper(getApplicationContext());
+                            SQLiteDatabase db = helper.getReadableDatabase();
+                            db.execSQL("DELETE FROM myplaces WHERE name=?", args);
+                            db.close();
+                            Log.d("WWWWWWw","Despues de borrar");
+                            listPlaces.setAdapter(adapter);
+
+                        }else if (options[item].equals("Cancelar")) {
+
+                            dialog.dismiss();
+                        }
+                    }
+                });
+                builder.show();
+                return true;
+            }
+        });
+
         //Itmems
         HashMap<String, Object> itemLocal;
         //Lista de items
@@ -224,17 +257,14 @@ public class MisSitios extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("RRRRRRRRR", "En onResume()");
         listaCategorias = new ArrayList<>();
         listaCategorias.add(0,new Categoria("Todos"));
         MySQLOpenHelper helper = new MySQLOpenHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT name FROM categories", null);
         while (cursor.moveToNext()) {
-            Log.d("RRRRRRRRR",cursor.getString(0));
             Categoria nuevaCategoria = new Categoria(cursor.getString(0));
             listaCategorias.add(nuevaCategoria);
-            Log.d("RRRRRRRRR","Lista categorias: "+nuevaCategoria.getNombreCategoria()+" ");
         }
         cursor.close();
         db.close();
@@ -248,6 +278,7 @@ public class MisSitios extends ActionBarActivity {
         drawerList.setAdapter(new ArrayAdapter<String>(
                 getSupportActionBar().getThemedContext(),
                 android.R.layout.simple_list_item_activated_1, opcionesMenu));
+
 
 
     }

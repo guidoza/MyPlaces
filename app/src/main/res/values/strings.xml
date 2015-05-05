@@ -5,7 +5,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_compartir">Compartir</string>
     <string name="action_guardar">Guardar</string>
-    <string name="title_activity_nuevo_sitio">NuevoSitio</string>
+    <string name="title_activity_nuevo_sitio">Nuevo Sitio</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_mis_sitios">Mis Sitios</string>
@@ -19,7 +19,9 @@
     <string name="foto">Selecciona una foto</string>
     <string name="title_activity_sitio">Sitio</string>
 
-    <string name="ir">Abrir en Google Maps</string>
+    <string name="abrir">Abrir en Google Maps</string>
+    <string name="ir">Guíame hasta este sitio!</string>
+
     <string name="categorias">Categorías</string>
     <string name="cat">Selecciona una categoría:</string>
 

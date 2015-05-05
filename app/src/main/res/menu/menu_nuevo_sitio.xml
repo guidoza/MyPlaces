@@ -3,11 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.gui.myplaces.NuevoSitio">
 
-    <item android:id="@+id/action_compartir"
-        android:title="@string/action_compartir"
-        android:orderInCategory="100"
-        app:showAsAction="always"
-        android:icon="@drawable/abc_ic_menu_share_mtrl_alpha"/>
+
     <item android:id="@+id/action_guardar"
         android:title="@string/action_compartir"
         android:orderInCategory="101"
