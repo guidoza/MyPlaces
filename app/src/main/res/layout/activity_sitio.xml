@@ -7,7 +7,7 @@
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="265dp"
+        android:layout_height="240dp"
         android:id="@+id/imageView"
         android:layout_gravity="center"
         android:background="@drawable/circle"
@@ -32,7 +32,7 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="50dp"
         android:id="@+id/scrollView2"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
@@ -58,8 +58,8 @@
             android:layout_weight="1">
 
             <ImageButton
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
                 android:id="@+id/imageButton"
                 android:background="@drawable/boton_menu"
                 android:src="@drawable/mapsicon"
@@ -80,8 +80,8 @@
             android:layout_weight="1">
 
             <ImageButton
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
                 android:id="@+id/imageButton2"
                 android:background="@drawable/boton_menu"
                 android:src="@drawable/street_view"

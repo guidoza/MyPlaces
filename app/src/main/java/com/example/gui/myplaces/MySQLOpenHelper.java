@@ -15,6 +15,7 @@ public class MySQLOpenHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase arg0) {
 		arg0.beginTransaction();
+        //Tabla de sitios y tabla de categorias
         arg0.execSQL("CREATE TABLE myplaces (id INTEGER PRIMARY KEY AUTOINCREMENT, latitud DOUBLE, longitud DOUBLE, name TEXT NOT NULL, description TEXT, image TEXT, categoria TEXT);");
         arg0.execSQL("CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);");
         arg0.setTransactionSuccessful();

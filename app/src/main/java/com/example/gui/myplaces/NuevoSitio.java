@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -21,8 +20,6 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,18 +28,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
-import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -75,7 +67,7 @@ public class NuevoSitio extends ActionBarActivity {
         setContentView(R.layout.activity_nuevo_sitio);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-
+        //Nos permite conocer si debemos guardar estado o no
         guardarEstado=true;
 
         btnSelectImage=(Button)findViewById(R.id.nuevaFoto);
@@ -88,14 +80,12 @@ public class NuevoSitio extends ActionBarActivity {
         });
         nombreSitio = (EditText) findViewById(R.id.nombreSitio);
         descripcionSitio = (EditText) findViewById(R.id.descripcionSitio);
-
         spiner = (Spinner) findViewById(R.id.spinner);
-
+        //Añadimos las categorias a mostrar por el Spinner
         categorias = new ArrayList<>();
         categorias.add(0,"Ninguna");
         MySQLOpenHelper helper = new MySQLOpenHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
-
         Cursor cursor = db.rawQuery("SELECT name FROM categories", null);
             while (cursor.moveToNext()) {
                 String nuevaCategoria = cursor.getString(0);
@@ -103,13 +93,13 @@ public class NuevoSitio extends ActionBarActivity {
             }
         cursor.close();
         db.close();
-
+        //Adaptador para el Spinner
         ArrayAdapter<String> adaptador = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item,
                 categorias);
         adaptador.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
-
+        //Mostramos las categorias en el Spinner
         spiner.setAdapter(adaptador);
 
     }
@@ -130,19 +120,24 @@ public class NuevoSitio extends ActionBarActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_guardar) {
+            //Si no tenemos una posicion
             if(posicion==null){
+                //Activamos GPS
                 ActivaGPS();
             }else{
-            double latitud = posicion.getLatitude();
-            double longitud = posicion.getLongitude();
-            name = nombreSitio.getText().toString();
-            description = descripcionSitio.getText().toString();
-            categoria = spiner.getSelectedItem().toString();
-            MySQLOpenHelper helper = new MySQLOpenHelper(this);
-            SQLiteDatabase db = helper.getWritableDatabase();
-            db.execSQL("INSERT INTO myplaces (latitud, longitud, name, description, image, categoria) VALUES ('"+latitud+"', '"+longitud+"', '"+name+"', '"+description+"', '"+image+"', '"+categoria+"');");
-            db.close();
-            finish();
+                //Obtenemos todos los datos
+                double latitud = posicion.getLatitude();
+                double longitud = posicion.getLongitude();
+                name = nombreSitio.getText().toString();
+                description = descripcionSitio.getText().toString();
+                categoria = spiner.getSelectedItem().toString();
+                MySQLOpenHelper helper = new MySQLOpenHelper(this);
+                SQLiteDatabase db = helper.getWritableDatabase();
+                //Los añadimos a la BD
+                db.execSQL("INSERT INTO myplaces (latitud, longitud, name, description, image, categoria) VALUES ('"+latitud+"', '"+longitud+"', '"+name+"', '"+description+"', '"+image+"', '"+categoria+"');");
+                db.close();
+                //Cerramos la actividad
+                finish();
             }
             return true;
         }
@@ -150,29 +145,27 @@ public class NuevoSitio extends ActionBarActivity {
             NavUtils.navigateUpFromSameTask(this);
             return true;
         }
-
-
         return super.onOptionsItemSelected(item);
     }
-
+    //Se activa cuando se pulsa sobre el boton Añadir imagen
     private void selectImage() {
-
+        //Opciones del dialogo
         final CharSequence[] options = { "Haz una foto", "Elige de la galeria","Cancelar" };
-
         AlertDialog.Builder builder = new AlertDialog.Builder(NuevoSitio.this);
         builder.setTitle("Añade una imagen!");
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
                 if (options[item].equals("Haz una foto"))
-                {
+                {   //Lanzamos el intent de la camara y esperamos una respuesta
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    //Creamos un file con la foto hecha
                     File f = new File(android.os.Environment.getExternalStorageDirectory(), "temp.jpg");
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
                     startActivityForResult(intent, 1);
                 }
                 else if (options[item].equals("Elige de la galeria"))
-                {
+                {   //Lanzamos el Intent de seleccionar desde archivo y esperamos una respuesta
                     Intent intent = new   Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent, 2);
 
@@ -189,8 +182,10 @@ public class NuevoSitio extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
+            //Caso en el que hacemos una foto
             if (requestCode == 1) {
                 File f = new File(Environment.getExternalStorageDirectory().toString());
+                //Buscamos el file de la foto hecha anteriormente
                 for (File temp : f.listFiles()) {
                     if (temp.getName().equals("temp.jpg")) {
                         f = temp;
@@ -200,20 +195,23 @@ public class NuevoSitio extends ActionBarActivity {
                 try {
                     Bitmap bitmap;
                     BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-
+                    //Convertimos el file en bitmap
                     bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
                             bitmapOptions);
+                    //Mostramos el bitmap
                     imagenSeleccionada.setImageBitmap(bitmap);
                     f.delete();
-
+                    //Creamos una carpeta para almacenar nuestras fotos
                     File imagesFolder = new File(
                             Environment.getExternalStorageDirectory(), "Myplaces");
                     imagesFolder.mkdirs();
                     OutputStream outFile;
+                    //Asignamos un nombre
                     String name = String.valueOf(System.currentTimeMillis());
                     File file = new File(imagesFolder, name+ ".jpg");
+                    //Nos quedamos con el path, es lo que guardaremos en la BD
                     image = file.getAbsolutePath();
-
+                    //La guardamos
                     try {
                         outFile = new FileOutputStream(file);
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
@@ -230,18 +228,20 @@ public class NuevoSitio extends ActionBarActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            //Caso en el que seleccionamos una foto
             } else if (requestCode == 2) {
-                Log.d("DDDDDDD","elige de la galeria");
                 Uri selectedImage = data.getData();
                 String[] filePath = { MediaStore.Images.Media.DATA };
                 Cursor c = getContentResolver().query(selectedImage,filePath, null, null, null);
                 c.moveToFirst();
                 int columnIndex = c.getColumnIndex(filePath[0]);
                 String picturePath = c.getString(columnIndex);
+                //Guardamos su path
                 image = picturePath;
                 c.close();
-                Bitmap thumbnail = (BitmapFactory.decodeFile(picturePath));
-                imagenSeleccionada.setImageBitmap(thumbnail);
+                //Generamos el bitmap para mostrarlo
+                Bitmap bitmap = (BitmapFactory.decodeFile(picturePath));
+                imagenSeleccionada.setImageBitmap(bitmap);
             }
         }
     }
@@ -250,8 +250,7 @@ public class NuevoSitio extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         recoverState();
-
-        // Check the availability of the Google Play Services
+        //Comprobamos que los Google Play Services estan disponibles
         int available = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (available != ConnectionResult.SUCCESS) {
             Dialog dialog = GooglePlayServicesUtil.getErrorDialog(available, this, 0);
@@ -261,11 +260,12 @@ public class NuevoSitio extends ActionBarActivity {
                 errorDialog.show(getSupportFragmentManager(), "errorDialog");
             }
         }
+        //Comprobamos si el GPS esta activado
         final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
         if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
             ActivaGPS();
         }
-        // Instantiate the MapFragment
+        //Instanciamos el mapa
         setUpMapIfNeeded();
     }
     @Override
@@ -283,32 +283,27 @@ public class NuevoSitio extends ActionBarActivity {
         }
     }
     private void setUpMapIfNeeded() {
-        // Configuramos el objeto GoogleMaps con valores iniciales.
         if (mMap == null) {
             //Instanciamos el objeto mMap a partir del MapFragment definido bajo el Id "map"
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
-            // Chequeamos si se ha obtenido correctamente una referencia al objeto GoogleMap
             if (mMap != null) {
-                // El objeto GoogleMap ha sido referenciado correctamente
-                // Asigno un nivel de zoom
+                //Atributos del mapa
                 mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 mMap.setMyLocationEnabled(true);
                 CameraUpdate ZoomCam = CameraUpdateFactory.zoomTo(17);
                 mMap.animateCamera(ZoomCam);
-                // Establezco un listener para ver cuando cambio de posicion
+                //Listener para cambios de posicion
                 mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
 
                     public void onMyLocationChange(Location pos) {
-                        // Extraigo la Lat y Lon del Listener
                         double lat = pos.getLatitude();
                         double lon = pos.getLongitude();
-
-                        // Muevo la camara a mi posicion
+                        //Movemos la camara a la posicion
                         CameraUpdate cam = CameraUpdateFactory.newLatLng(new LatLng(
                                 lat, lon));
-
                         mMap.animateCamera(cam);
+                        //Actualizamos posicion, son las coordenadas que guardaremos
                         posicion = pos;
 
                     }
@@ -318,17 +313,18 @@ public class NuevoSitio extends ActionBarActivity {
     }
 
     private void ActivaGPS() {
-
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("El sistema GPS esta desactivado, ¿Desea activarlo?")
                 .setCancelable(false)
                 .setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        //Dialogo que nos lleva a activar el GPS
                         startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        //Cerrar dialogo
                         dialog.cancel();
                     }
                 });
@@ -336,6 +332,7 @@ public class NuevoSitio extends ActionBarActivity {
         alert.show();
     }
     public void saveState(){
+        //Guardaremos las preferencias si debemos hacerlo
         if(!guardarEstado) return;
             SharedPreferences preferences = getSharedPreferences("Preferencias", Activity.MODE_PRIVATE);
             if (preferences == null) return;
@@ -344,11 +341,11 @@ public class NuevoSitio extends ActionBarActivity {
             preferencesEditor.putString("namePlace", ((EditText) findViewById(R.id.nombreSitio)).getText().toString());
             preferencesEditor.putString("descriptionPlace", ((EditText) findViewById(R.id.descripcionSitio)).getText().toString());
             preferencesEditor.putInt("spinner", ((Spinner) findViewById(R.id.spinner)).getSelectedItemPosition());
-
             preferencesEditor.commit();
 
     }
     public void recoverState(){
+        //Recuperaremos las preferencias si debemos hacerlo
         if(!guardarEstado)return;
         SharedPreferences preferences = getSharedPreferences("Preferencias", MODE_PRIVATE);
         if (preferences==null) return;
@@ -363,10 +360,12 @@ public class NuevoSitio extends ActionBarActivity {
         preferences.edit().remove("descriptionPlace");
         preferences.edit().remove("spinner");
         preferences.edit().clear().commit();
+        //Cuando borramos el estado, no queremos que se recupere inmediatamente
         guardarEstado = false;
     }
     @Override
     public void finish(){
+        //Sobreescribimos el metodo finish para que borre el estado
         super.finish();
         clearState();
 

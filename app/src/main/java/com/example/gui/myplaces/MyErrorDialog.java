@@ -14,7 +14,6 @@ public class MyErrorDialog extends DialogFragment {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		if (dialog != null) {
 			return this.dialog;
 		}

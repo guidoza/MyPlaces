@@ -59,12 +59,7 @@
             android:screenOrientation="portrait"
              >
         </activity>
-        <activity
-            android:name=".Credits"
-            android:label="@string/title_activity_credits"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".MainActivity" >
-        </activity>
+
         <activity
             android:name=".BuscarSitio"
             android:screenOrientation="portrait"
@@ -74,7 +69,7 @@
             android:name=".Sitio"
             android:label="@string/title_activity_sitio"
             android:screenOrientation="portrait"
-            android:theme="@style/Main">
+            >
         </activity>
     </application>
 

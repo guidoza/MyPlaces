@@ -11,14 +11,12 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
@@ -43,27 +41,29 @@ public class Sitio extends ActionBarActivity {
         TextView tvName =(TextView) findViewById(R.id.textView);
         TextView tvDescription =(TextView) findViewById(R.id.textView3);
         TextView tvCategoria = (TextView) findViewById(R.id.textView5);
-
+        //Obtenemos la informacion del sitio
         datos = getIntent().getStringArrayExtra("data");
-
         latitud = Double.parseDouble(datos[0]);
         longitud = Double.parseDouble(datos[1]);
         img = datos[4];
-
         tvName.setText(datos[2]);
         tvDescription.setText(datos[3]);
+        //CAategoria en blanco si es Ninguna
         if(datos[5].equals("Ninguna")){
             tvCategoria.setText("");
         }else tvCategoria.setText(datos[5]);
-
+        //Si hay foto del sitio
         if(!datos[4].equals("null")) {
+            //Creamos el bitmap a partir de path
             File image = new File(datos[4]);
             if(image.exists()){
                 Bitmap bitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
                 //Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, ((int) convertDpToPixel(140, this)), ((int) convertDpToPixel(110, this)), true);
+                //Lo mostramos
                 imagen.setImageBitmap(bitmap);
 
             }
+        //Si no hay foto, ponemos una por defecto
         } else {
             Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_places);
             imagen.setImageBitmap(bitmap);
@@ -73,9 +73,7 @@ public class Sitio extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        // Check the availability of the Google Play Services
-
+        //Comprobamos la disponibilidad de los Google Play Services
         int available = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (available != ConnectionResult.SUCCESS) {
             Dialog dialog = GooglePlayServicesUtil.getErrorDialog(available, this, 0);
@@ -107,31 +105,35 @@ public class Sitio extends ActionBarActivity {
             return true;
         }
         if(id == R.id.action_compartir){
+            //Enviaremos un email
             sendEmail();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+    //Se activa al pulsar sobre el boton del street view
     public void street(View v){
+        //Activamos GPS
         final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
         if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
             ActivaGPS();
         }
-        //Streetveew
         Uri gmmIntentUri = Uri.parse("google.streetview:cbll="+latitud+","+longitud+"&cbp=0,30,0,0,-15");
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
+        //Vemos nuestro sitio con el Street View de Google
         if (mapIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(mapIntent);
         }
     }
+    //Podremos obtener una ruta hasta nuestro sitio
     public void irA(View v){
+        //Activamos GPS
         final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
         if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
             ActivaGPS();
         }
-
         //Utilizamos la interfaz nuestra propia BuscarSitio
         Intent i = new Intent(this, BuscarSitio.class);
         i.putExtra("data", datos);
@@ -146,8 +148,8 @@ public class Sitio extends ActionBarActivity {
             startActivity(mapIntent);
         }**/
     }
+    //Metodo para activar el GPS
     private void ActivaGPS() {
-
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("El sistema GPS esta desactivado, ¿Desea activarlo?")
                 .setCancelable(false)
@@ -164,24 +166,30 @@ public class Sitio extends ActionBarActivity {
         alert = builder.create();
         alert.show();
     }
-    protected void sendEmail() {
 
+   //Metodo para compartir nuestros sitios
+    protected void sendEmail() {
+        //Creamos un intent
         Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
         emailIntent.setType("application/image");
-        //emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{strEmail});
+        //emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{Email});
+        //Asunto y cuerpo
         emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,"Mira donde he estado!");
         emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, "En "+datos[2]+"!"+"\n\nEnviado desde la aplicación MyPlaces!");
-
+        //Si tenemos una imagen
         if(!img.equals("null")) {
             File image = new File(img);
             if(image.exists()){
                 String ruta = image.getAbsolutePath();
+                //Adjuntamos la imagen
                 emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + ruta));
             }
         }
         try {
+            //Lanzamos el intent y veremos que aplicaciones instaladas en el dispositivo pueden atender la peticion
             startActivity(Intent.createChooser(emailIntent, "Compartir con:"));
         } catch (android.content.ActivityNotFoundException ex) {
+            //Si no puede ser atendida, generaremos un mensaje de error
             Toast.makeText(Sitio.this,
                     "No se ha encontrado una aplicación para compartir tu sitio.", Toast.LENGTH_LONG).show();
         }

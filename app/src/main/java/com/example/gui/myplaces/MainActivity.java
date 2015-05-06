@@ -13,7 +13,7 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
-
+    //Menu dashboard
     public void onClickDashboard(View view){
         int id = view.getId();
         if(id == R.id.buttonNuevoSitio) {
